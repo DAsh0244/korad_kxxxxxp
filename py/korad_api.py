@@ -162,75 +162,58 @@ class Korad:
 
 
 # Function Interface
-
-def korad_set_voltage(addr:str,ch:int,voltage:_Real):
+def _send_cmd(addr,command,timeout=KORAD_MAX_TIMEOUT):
     with _serial.Serial(addr,baudrate=KORAD_BAUD,parity=KORAD_PARITY,rtscts=KORAD_DATA_FLOW_CTRL,
                         dsrdtr=KORAD_DATA_FLOW_CTRL,timeout=KORAD_MAX_TIMEOUT) as port:
-        port.write(KORAD_VSET_CMD(ch,voltage))
+        port.write(command)
+    sleep(timeout)
+
+def korad_set_voltage(addr:str,ch:int,voltage:_Real, clamp):
+    _send_cmd(addr, KORAD_VSET_CMD(ch,voltage))
 
 def korad_set_current(addr:str,ch:int,current:_Real, clamp):
-    with _serial.Serial(addr,baudrate=KORAD_BAUD,parity=KORAD_PARITY,rtscts=KORAD_DATA_FLOW_CTRL,
-                        dsrdtr=KORAD_DATA_FLOW_CTRL,timeout=KORAD_MAX_TIMEOUT) as port:
-        port.write(KORAD_ISET_CMD(ch,current))
+    _send_cmd(addr, KORAD_ISET_CMD(ch,current))
 
 def korad_get_desired_voltage(addr:str,ch:int):
-    with _serial.Serial(addr,baudrate=KORAD_BAUD,parity=KORAD_PARITY,rtscts=KORAD_DATA_FLOW_CTRL,
-                        dsrdtr=KORAD_DATA_FLOW_CTRL,timeout=KORAD_MAX_TIMEOUT) as port:
-        port.write(KORAD_VREAD_CMD(ch))
+    _send_cmd(addr, KORAD_VREAD_CMD(ch))
 
 def korad_get_desired_current(addr:str,ch:int):
-    with _serial.Serial(addr,baudrate=KORAD_BAUD,parity=KORAD_PARITY,rtscts=KORAD_DATA_FLOW_CTRL,
-                        dsrdtr=KORAD_DATA_FLOW_CTRL,timeout=KORAD_MAX_TIMEOUT) as port:
-        port.write(KORAD_IREAD_CMD(ch))
+    _send_cmd(addr, KORAD_IREAD_CMD(ch))
 
 def korad_get_actual_voltage(addr:str,ch:int):
-    with _serial.Serial(addr,baudrate=KORAD_BAUD,parity=KORAD_PARITY,rtscts=KORAD_DATA_FLOW_CTRL,
-                        dsrdtr=KORAD_DATA_FLOW_CTRL,timeout=KORAD_MAX_TIMEOUT) as port:
-        port.write(KORAD_VMEAS_CMD(ch))
-
+    _send_cmd(addr, KORAD_VMEAS_CMD(ch))
 
 def korad_get_actual_current(addr:str,ch:int):
-    with _serial.Serial(addr,baudrate=KORAD_BAUD,parity=KORAD_PARITY,rtscts=KORAD_DATA_FLOW_CTRL,
-                        dsrdtr=KORAD_DATA_FLOW_CTRL,timeout=KORAD_MAX_TIMEOUT) as port:
-        port.write(KORAD_IMEAS_CMD(ch))
-
+    _send_cmd(addr, KORAD_IMEAS_CMD(ch))
 
 def korad_set_output(addr:str,enable:bool):
-    with _serial.Serial(addr,baudrate=KORAD_BAUD,parity=KORAD_PARITY,rtscts=KORAD_DATA_FLOW_CTRL,
-                        dsrdtr=KORAD_DATA_FLOW_CTRL,timeout=KORAD_MAX_TIMEOUT) as port:
-        enable = 1 if enable else 0
-        port.write(KORAD_OUTPUT_CMD(enable))
-
+    enable = 1 if enable else 0
+    _send_cmd(addr, KORAD_OUTPUT_CMD(enable))
 
 def korad_set_ocp(addr:str,enable:bool):
-    with _serial.Serial(addr,baudrate=KORAD_BAUD,parity=KORAD_PARITY,rtscts=KORAD_DATA_FLOW_CTRL,
-                        dsrdtr=KORAD_DATA_FLOW_CTRL,timeout=KORAD_MAX_TIMEOUT) as port:
-        enable = 1 if enable else 0
-        port.write(KORAD_OCP_CMD(enable))
-
+    enable = 1 if enable else 0
+    _send_cmd(addr, KORAD_OCP_CMD(enable))
 
 def korad_identify(addr:str):
     with _serial.Serial(addr,baudrate=KORAD_BAUD,parity=KORAD_PARITY,rtscts=KORAD_DATA_FLOW_CTRL,
                         dsrdtr=KORAD_DATA_FLOW_CTRL,timeout=KORAD_MAX_TIMEOUT) as port:
         port.write(KORAD_ID_CMD)
-        return port.readline().rstrip().decode('utf-8')
+        res = port.readline().rstrip().decode('utf-8')
+    return res
 
 def korad_status(addr:str):
     with _serial.Serial(addr,baudrate=KORAD_BAUD,parity=KORAD_PARITY,rtscts=KORAD_DATA_FLOW_CTRL,
                         dsrdtr=KORAD_DATA_FLOW_CTRL,timeout=KORAD_MAX_TIMEOUT) as port:
         port.write(KORAD_STATUS_CMD)
         status = ord(port.readline().rstrip().decode('utf-8'))
-        status_dict = {'output':bool(status&(1<<6)),
-                       'mode':'CV' if status&1 else 'CC',
-                       'ocp':bool(status&(1<<5)),
-                       }
+    status_dict = {'output':bool(status&(1<<6)),
+                   'mode':'CV' if status&1 else 'CC',
+                   'ocp':bool(status&(1<<5)),
+                   }
+    return status_dict
 
 def korad_save_settings(addr:str,loc:int):
-    with _serial.Serial(addr,baudrate=KORAD_BAUD,parity=KORAD_PARITY,rtscts=KORAD_DATA_FLOW_CTRL,
-                        dsrdtr=KORAD_DATA_FLOW_CTRL,timeout=KORAD_MAX_TIMEOUT) as port:
-        port.write(KORAD_SAVE_CMD(loc))
+    _send_cmd(addr, KORAD_SAVE_CMD(loc))
 
 def korad_load_settings(addr:str,loc:int):
-    with _serial.Serial(addr,baudrate=KORAD_BAUD,parity=KORAD_PARITY,rtscts=KORAD_DATA_FLOW_CTRL,
-                        dsrdtr=KORAD_DATA_FLOW_CTRL,timeout=KORAD_MAX_TIMEOUT) as port:
-        port.write(KORAD_RECALL_CMD(loc))
+    _send_cmd(addr, KORAD_RECALL_CMD(loc))
