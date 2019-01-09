@@ -64,13 +64,13 @@ class Korad:
         atexit.register(self.close)
         # self.close = self._port.close
     
-    def send_cmd(self,cmd):
+    def _send_cmd(self,cmd):
         self._port.write(cmd)
         sleep(self.timeout)
 
     @property
     def status(self)->_Dict[str, _Union[bool,str]]:
-        self.send_cmd(KORAD_STATUS_CMD)
+        self._send_cmd(KORAD_STATUS_CMD)
         status = ord(self._port.readline().rstrip().decode('utf-8'))
         # print('{0:08b}'.format(status))
         # parse status as described in notes:
@@ -85,7 +85,7 @@ class Korad:
         return status_dict
     
     def _identify(self)->str:
-        self.send_cmd(KORAD_ID_CMD)
+        self._send_cmd(KORAD_ID_CMD)
         id = self._port.readline().rstrip().decode('utf-8')
         # info inferred from model number
         model_info = KORAD_MODEL_REGEX.match(id).groupdict()
@@ -95,19 +95,19 @@ class Korad:
         return id, channels, max_voltage, max_current
     
     def measured_voltage(self,ch=1):
-        self.send_cmd(KORAD_VMEAS_CMD(ch))
+        self._send_cmd(KORAD_VMEAS_CMD(ch))
         return float(self._port.readline().rstrip().decode('utf-8'))
     
     def measured_current(self,ch=1):
-        self.send_cmd(KORAD_IMEAS_CMD(ch))
+        self._send_cmd(KORAD_IMEAS_CMD(ch))
         return float(self._port.readline().rstrip().decode('utf-8'))
     
     def configured_voltage(self,ch=1):
-        self.send_cmd(KORAD_VREAD_CMD(ch))
+        self._send_cmd(KORAD_VREAD_CMD(ch))
         return float(self._port.readline().rstrip().decode('utf-8'))
     
     def configured_current(self,ch=1):
-        self.send_cmd(KORAD_IREAD_CMD(ch))
+        self._send_cmd(KORAD_IREAD_CMD(ch))
         return float(self._port.readline().rstrip().decode('utf-8'))
     
     def set_voltage(self,ch,voltage):
@@ -118,7 +118,7 @@ class Korad:
                 voltage = self.max_voltage
             else:
                 raise ValueError('Voltage Too large: %s is greater than max voltage of %s' % voltage, self.max_voltage)
-        self.send_cmd(KORAD_VSET_CMD(ch,voltage))
+        self._send_cmd(KORAD_VSET_CMD(ch,voltage))
     
     def set_current(self,ch,current):
         if current < 0:
@@ -128,21 +128,21 @@ class Korad:
                 current = self.max_current
             else:
                 raise ValueError('Current Too large: %s is greater than max current of %s' % current, self.max_current)
-        self.send_cmd(KORAD_ISET_CMD(ch,current))
+        self._send_cmd(KORAD_ISET_CMD(ch,current))
     
     def set_output(self,enable:bool):
         enable = 1 if enable else 0 
-        self.send_cmd(KORAD_OUTPUT_CMD(enable))
+        self._send_cmd(KORAD_OUTPUT_CMD(enable))
     
     def save_settings(self,loc:int):
-        self.send_cmd(KORAD_SAVE_CMD(loc))
+        self._send_cmd(KORAD_SAVE_CMD(loc))
     
     def recall_settings(self,loc:int):
-        self.send_cmd(KORAD_RECALL_CMD(loc))
+        self._send_cmd(KORAD_RECALL_CMD(loc))
     
     def set_ocp(self,enable:bool):
         enable = 1 if enable else 0
-        self.send_cmd(KORAD_OCP_CMD(enable))
+        self._send_cmd(KORAD_OCP_CMD(enable))
     
     def close(self):
         self._port.close()
