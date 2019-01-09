@@ -44,7 +44,7 @@ KORAD_IMEAS_CMD = lambda x: 'IOUT{}?'.format(x).encode('utf-8')
 KORAD_MODEL_REGEX = re.compile(r'.*k(?P<panel>a|d)(?P<max_voltage>\d)(?P<channels>\d)(?P<max_current>\d+)p.*',re.I)
 
 # OOP Interface
-
+# todo: maybe implement class/containers for save/recall settings, configurations
 class Korad:
     """
     Korad abstraction object
@@ -162,6 +162,7 @@ class Korad:
 
 
 # Function Interface
+# todo: implement clamping. 
 def _send_cmd(addr,command,timeout=KORAD_MAX_TIMEOUT):
     with _serial.Serial(addr,baudrate=KORAD_BAUD,parity=KORAD_PARITY,rtscts=KORAD_DATA_FLOW_CTRL,
                         dsrdtr=KORAD_DATA_FLOW_CTRL,timeout=KORAD_MAX_TIMEOUT) as port:

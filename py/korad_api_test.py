@@ -17,6 +17,7 @@ TEST_KORAD_CONFIG = {
     'current':[{'ch':1,'current':0.01}],
 }
 
+# todo: implement methods for testing settign and measuring 
 class KoradObjectTests(unittest.TestCase):
     def setUp(self):
         self.psu = Korad(TEST_KORAD_INFO['addr'])
@@ -58,6 +59,7 @@ class KoradObjectTests(unittest.TestCase):
         self.assertEqual(status['i_out'],0,'ouput may not be disabled')
         self.psu.set_output(True)
 
+# todo: implement tests for functional interface
 
 if __name__ == "__main__":
     unittest.main()
